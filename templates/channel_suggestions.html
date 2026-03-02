@@ -1,0 +1,206 @@
+<div class="tab-content" id="suggestions">
+    <div class="suggestions-container">
+        <div class="suggestions-header">
+            <h2><i class="fas fa-lightbulb"></i> Предложки для канала</h2>
+            <div class="suggestions-count" id="suggestions-count">Загрузка...</div>
+        </div>
+
+        <div class="suggestions-list" id="suggestions-list">
+            <!-- Предложения будут загружены динамически -->
+        </div>
+
+        <div class="no-suggestions" id="no-suggestions" style="display: none;">
+            <i class="fas fa-inbox"></i>
+            <p>Нет предложений для рассмотрения</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Загрузить предложения при загрузке вкладки
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSuggestions();
+
+        // Обработчик переключения на вкладку предложек
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.dataset.tab === 'suggestions') {
+                    loadSuggestions();
+                }
+            });
+        });
+    });
+
+    function loadSuggestions() {
+        fetch(`/channel_suggestions/{{ channel.name }}`)
+            .then(r => r.json())
+            .then(data => {
+                const suggestionsList = document.getElementById('suggestions-list');
+                const noSuggestions = document.getElementById('no-suggestions');
+                const suggestionsCount = document.getElementById('suggestions-count');
+
+                if (data.suggestions.length === 0) {
+                    suggestionsList.innerHTML = '';
+                    noSuggestions.style.display = 'flex';
+                    suggestionsCount.textContent = '0 предложений';
+                } else {
+                    noSuggestions.style.display = 'none';
+                    suggestionsCount.textContent = `${data.suggestions.length} ${data.suggestions.length === 1 ? 'предложение' : data.suggestions.length > 1 && data.suggestions.length < 5 ? 'предложения' : 'предложений'}`;
+
+                    suggestionsList.innerHTML = data.suggestions.map(s => `
+                        <div class="suggestion-card" data-id="${s.id}">
+                            <div class="suggestion-header">
+                                <div class="suggestion-author">
+                                    ${s.avatar ? `<img src="/uploads/${s.avatar}" class="suggestion-avatar">` : `<div class="suggestion-avatar-placeholder">${s.username[0].toUpperCase()}</div>`}
+                                    <div class="suggestion-author-info">
+                                        <div class="suggestion-username">${s.username}</div>
+                                        <div class="suggestion-time">${formatTime(s.created_at)}</div>
+                                    </div>
+                                </div>
+                                <div class="suggestion-actions">
+                                    <button class="btn-approve" onclick="approveSuggestion(${s.id})">
+                                        <i class="fas fa-check"></i> Одобрить
+                                    </button>
+                                    <button class="btn-reject" onclick="rejectSuggestion(${s.id})">
+                                        <i class="fas fa-times"></i> Отклонить
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="suggestion-content">
+                                ${escapeHtml(s.content)}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            })
+            .catch(err => {
+                console.error('Error loading suggestions:', err);
+                document.getElementById('suggestions-list').innerHTML = '<p class="error">Ошибка загрузки предложений</p>';
+            });
+    }
+
+    function approveSuggestion(suggestionId) {
+        if (!confirm('Одобрить это предложение? Оно будет опубликовано в канале.')) {
+            return;
+        }
+
+        const formData = new FormData();
+        fetch(`/approve_suggestion/${suggestionId}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('✅ Предложение одобрено и опубликовано!', 'success');
+                // Удалить карточку с анимацией
+                const card = document.querySelector(`.suggestion-card[data-id="${suggestionId}"]`);
+                if (card) {
+                    card.style.transform = 'scale(0.95)';
+                    card.style.opacity = '0';
+                    setTimeout(() => {
+                        card.remove();
+                        // Обновить счетчик
+                        const countEl = document.getElementById('suggestions-count');
+                        const currentCount = parseInt(countEl.textContent);
+                        countEl.textContent = `${currentCount - 1} ${currentCount - 1 === 1 ? 'предложение' : currentCount - 1 > 1 && currentCount - 1 < 5 ? 'предложения' : 'предложений'}`;
+
+                        // Если предложений не осталось, показать сообщение
+                        if (document.querySelectorAll('.suggestion-card').length === 0) {
+                            document.getElementById('no-suggestions').style.display = 'flex';
+                        }
+                    }, 300);
+                }
+            } else {
+                showNotification('❌ Ошибка: ' + data.error, 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Error approving suggestion:', err);
+            showNotification('❌ Ошибка при одобрении предложения', 'error');
+        });
+    }
+
+    function rejectSuggestion(suggestionId) {
+        if (!confirm('Отклонить это предложение?')) {
+            return;
+        }
+
+        const formData = new FormData();
+        fetch(`/reject_suggestion/${suggestionId}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('🗑️ Предложение отклонено', 'info');
+                // Удалить карточку с анимацией
+                const card = document.querySelector(`.suggestion-card[data-id="${suggestionId}"]`);
+                if (card) {
+                    card.style.transform = 'scale(0.95)';
+                    card.style.opacity = '0';
+                    setTimeout(() => {
+                        card.remove();
+                        // Обновить счетчик
+                        const countEl = document.getElementById('suggestions-count');
+                        const currentCount = parseInt(countEl.textContent);
+                        countEl.textContent = `${currentCount - 1} ${currentCount - 1 === 1 ? 'предложение' : currentCount - 1 > 1 && currentCount - 1 < 5 ? 'предложения' : 'предложений'}`;
+
+                        // Если предложений не осталось, показать сообщение
+                        if (document.querySelectorAll('.suggestion-card').length === 0) {
+                            document.getElementById('no-suggestions').style.display = 'flex';
+                        }
+                    }, 300);
+                }
+            } else {
+                showNotification('❌ Ошибка: ' + data.error, 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Error rejecting suggestion:', err);
+            showNotification('❌ Ошибка при отклонении предложения', 'error');
+        });
+    }
+
+    function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (minutes < 1) return 'Только что';
+        if (minutes < 60) return `${minutes} ${getMinutesWord(minutes)} назад`;
+        if (hours < 24) return `${hours} ${getHoursWord(hours)} назад`;
+        if (days < 7) return `${days} ${getDaysWord(days)} назад`;
+
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function getMinutesWord(n) {
+        if (n === 1) return 'минуту';
+        if (n >= 2 && n <= 4) return 'минуты';
+        return 'минут';
+    }
+
+    function getHoursWord(n) {
+        if (n === 1) return 'час';
+        if (n >= 2 && n <= 4) return 'часа';
+        return 'часов';
+    }
+
+    function getDaysWord(n) {
+        if (n === 1) return 'день';
+        if (n >= 2 && n <= 4) return 'дня';
+        return 'дней';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>

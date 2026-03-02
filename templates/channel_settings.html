@@ -1,0 +1,211 @@
+<script src="{{ url_for('static', filename='notification.js') }}"></script>
+<script>
+    // Загрузка темы при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSavedTheme();
+    });
+</script>
+<style>
+    /* Минималистичный дизайн настроек канала */
+    .channel-settings-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 30px;
+    }
+
+    .settings-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .settings-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .settings-header h2 i {
+        color: #ff8c00;
+        font-size: 24px;
+    }
+
+    .settings-header p {
+        color: #888;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .settings-card {
+        background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,248,240,0.9) 100%);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(255,140,0,0.12);
+        border: 1px solid rgba(255,140,0,0.15);
+    }
+
+    .form-group-minimal {
+        margin-bottom: 28px;
+    }
+
+    .form-group-minimal:last-of-type {
+        margin-bottom: 32px;
+    }
+
+    .form-group-minimal label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group-minimal input[type="text"],
+    .form-group-minimal textarea {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid rgba(255,140,0,0.15);
+        border-radius: 14px;
+        font-size: 15px;
+        color: #333;
+        background: rgba(255,255,255,0.8);
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .form-group-minimal input[type="text"]:focus,
+    .form-group-minimal textarea:focus {
+        outline: none;
+        border-color: #ff8c00;
+        box-shadow: 0 0 0 4px rgba(255,140,0,0.1);
+        background: white;
+    }
+
+    .form-group-minimal textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-group-minimal input[type="text"]::placeholder,
+    .form-group-minimal textarea::placeholder {
+        color: #aaa;
+    }
+
+    .checkbox-minimal {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        padding: 16px 20px;
+        background: rgba(255,140,0,0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(255,140,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .checkbox-minimal:hover {
+        background: rgba(255,140,0,0.1);
+        border-color: rgba(255,140,0,0.2);
+    }
+
+    .checkbox-minimal input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+        accent-color: #ff8c00;
+        cursor: pointer;
+    }
+
+    .checkbox-minimal span {
+        font-size: 15px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .checkbox-minimal .hint {
+        font-size: 12px;
+        color: #888;
+        font-weight: 400;
+        margin-left: auto;
+    }
+
+    .save-btn-minimal {
+        width: 100%;
+        padding: 18px 32px;
+        background: linear-gradient(135deg, #ff8c00 0%, #ffa500 50%, #ff6b00 100%);
+        background-size: 200% 200%;
+        animation: gradientMove 3s ease infinite;
+        color: white;
+        border: none;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(255,140,0,0.3);
+    }
+
+    @keyframes gradientMove {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .save-btn-minimal:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(255,140,0,0.4);
+    }
+
+    .save-btn-minimal:active {
+        transform: translateY(0);
+    }
+
+    .save-btn-minimal i {
+        font-size: 18px;
+    }
+</style>
+
+<div class="tab-content" id="settings">
+    <div class="channel-settings-container">
+        <div class="settings-header">
+            <h2><i class="fas fa-cog"></i> Настройки канала</h2>
+            <p>Управляйте названием, описанием и параметрами приватности</p>
+        </div>
+
+        <div class="settings-card">
+            <form method="POST" action="/save_channel_settings/{{ channel.name }}">
+                <div class="form-group-minimal">
+                    <label for="name">Название канала</label>
+                    <input type="text" id="name" name="name" value="{{ channel.name }}" required placeholder="Введите название канала">
+                </div>
+
+                <div class="form-group-minimal">
+                    <label for="description">Описание канала</label>
+                    <textarea id="description" name="description" placeholder="Расскажите о теме и правилах вашего канала">{{ channel.description or '' }}</textarea>
+                </div>
+
+                <div class="form-group-minimal">
+                    <label class="checkbox-minimal">
+                        <input type="checkbox" name="is_private" {% if channel.is_private %}checked{% endif %}>
+                        <span>Приватный канал</span>
+                        <span class="hint">Доступ только по приглашению</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="save-btn-minimal">
+                    <i class="fas fa-check"></i>
+                    Сохранить изменения
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

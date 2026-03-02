@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мероприятие - EventHub 3000</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== ДИЗАЙН-СИСТЕМА ===== */
+        :root {
+            --primary-50: #fff7ed;
+            --primary-100: #ffedd5;
+            --primary-200: #fed7aa;
+            --primary-300: #fdba74;
+            --primary-400: #fb923c;
+            --primary-500: #f97316;
+            --primary-600: #ea580c;
+            --primary-700: #c2410c;
+            --primary-glow: rgba(249, 115, 22, 0.3);
+            
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-soft: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #64748b;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --shadow-strong: rgba(0, 0, 0, 0.1);
+            
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-2xl: 20px;
+            --radius-3xl: 24px;
+            --radius-full: 9999px;
+        }
+
+        [data-theme="dark"] {
+            --primary-50: #2d1a0c;
+            --primary-100: #3e2a1a;
+            --primary-200: #5a3f28;
+            --primary-300: #7b5a3a;
+            --primary-400: #a0744d;
+            --primary-500: #f97316;
+            --primary-600: #ff943d;
+            --primary-700: #ffb570;
+            --primary-glow: rgba(249, 115, 22, 0.5);
+            
+            --bg-body: #0a0a0f;
+            --bg-surface: #1a1a24;
+            --bg-soft: #2a2a35;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
+            --border-light: #2d2d3a;
+            --border-medium: #3d3d4a;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --shadow-strong: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.5;
+        }
+
+        .event-detail-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Навигация */
+        .detail-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            background: var(--bg-surface);
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border-light);
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            background: var(--primary-500);
+            color: white;
+            border-color: var(--primary-500);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-500);
+            color: white;
+            border-color: var(--primary-500);
+            transform: translateY(-2px);
+        }
+
+        /* Основной контент */
+        .event-content {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        /* Левая колонка */
+        .event-main {
+            background: var(--bg-surface);
+            border-radius: var(--radius-2xl);
+            border: 1px solid var(--border-light);
+            padding: 32px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
+        .event-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--primary-100);
+            color: var(--primary-700);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .event-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        /* Таймер */
+        .countdown-timer {
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin-bottom: 32px;
+            color: white;
+            text-align: center;
+        }
+
+        .timer-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+
+        .timer-numbers {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .timer-block {
+            text-align: center;
+        }
+
+        .timer-value {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .timer-label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        /* Мета информация */
+        .event-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-soft);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+        }
+
+        .meta-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-500);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .meta-content {
+            flex: 1;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 2px;
+        }
+
+        .meta-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Описание */
+        .description-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        .section-title i {
+            color: var(--primary-500);
+        }
+
+        .description-content {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            background: var(--bg-soft);
+            color: var(--text-secondary);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            border: 1px solid var(--border-light);
+        }
+
+        /* Правая колонка */
+        .event-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-light);
+            padding: 20px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        .sidebar-title i {
+            color: var(--primary-500);
+        }
+
+        /* Кнопки действий */
+        .action-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .primary-btn {
+            padding: 14px;
+            background: var(--primary-500);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .primary-btn:hover {
+            background: var(--primary-600);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px var(--primary-glow);
+        }
+
+        .secondary-btn {
+            padding: 14px;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .secondary-btn:hover {
+            border-color: var(--primary-500);
+            color: var(--primary-500);
+            background: var(--primary-50);
+        }
+
+        .danger-btn {
+            padding: 14px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .danger-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Участники */
+        .participants-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .participant-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .participant-item:last-child {
+            border-bottom: none;
+        }
+
+        .participant-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .participant-info {
+            flex: 1;
+        }
+
+        .participant-name {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .participant-role {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: var(--primary-100);
+            color: var(--primary-700);
+            border-radius: var(--radius-full);
+        }
+
+        .participant-status {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-confirmed { background: #10b981; }
+        .status-invited { background: #f59e0b; }
+        .status-declined { background: #ef4444; }
+
+        /* Подарки */
+        .gift-section {
+            margin-top: 16px;
+        }
+
+        .gift-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .gift-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-soft);
+            border: 1px solid var(--border-light);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gift-btn:hover {
+            transform: scale(1.15);
+            background: var(--primary-500);
+            color: white;
+            border-color: var(--primary-500);
+        }
+
+        .gift-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+        }
+
+        /* Плейлист */
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .playlist-item i {
+            color: var(--primary-500);
+            width: 20px;
+        }
+
+        .playlist-info {
+            flex: 1;
+        }
+
+        .playlist-title {
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .playlist-artist {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        /* Карта */
+        .map-placeholder {
+            height: 120px;
+            background: var(--bg-soft);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            border: 1px dashed var(--border-medium);
+            margin-top: 12px;
+        }
+
+        /* Меню */
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .menu-item i {
+            color: var(--primary-500);
+            width: 20px;
+        }
+
+        .menu-name {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .menu-price {
+            font-weight: 600;
+            color: var(--primary-600);
+            font-size: 13px;
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-surface);
+            border-radius: var(--radius-2xl);
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 20px 40px var(--shadow-strong);
+            animation: modalPop 0.3s;
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-tertiary);
+            transition: color 0.2s;
+            line-height: 1;
+        }
+        .modal-close:hover { color: var(--text-primary); }
+
+        /* Опросы */
+        .poll-item {
+            background: var(--bg-soft);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-light);
+        }
+
+        .poll-question {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .poll-option {
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+        }
+
+        .poll-option:hover {
+            background: var(--primary-50);
+        }
+
+        .poll-option-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .poll-option-text {
+            color: var(--text-primary);
+        }
+
+        .poll-option-votes {
+            color: var(--text-tertiary);
+        }
+
+        .poll-progress {
+            width: 100%;
+            height: 6px;
+            background: var(--border-light);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .poll-progress-fill {
+            height: 100%;
+            background: var(--primary-500);
+            border-radius: var(--radius-full);
+            transition: width 0.3s;
+        }
+
+        .create-poll-form {
+            margin-top: 20px;
+        }
+
+        .poll-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .poll-input:focus {
+            border-color: var(--primary-500);
+            outline: none;
+        }
+
+        .poll-options-container {
+            margin-bottom: 16px;
+        }
+
+        .poll-option-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .poll-option-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+        }
+
+        .poll-option-input button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-500);
+            color: white;
+            cursor: pointer;
+        }
+
+        /* QR код */
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .qr-box {
+            width: 200px;
+            height: 200px;
+            background: white;
+            padding: 16px;
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #000 25%, #fff 25%, #fff 50%, #000 50%, #000 75%, #fff 75%, #fff 100%);
+            background-size: 20px 20px;
+        }
+
+        /* Чат */
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--bg-soft);
+            border-radius: var(--radius-lg);
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .chat-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-500);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .chat-bubble {
+            background: var(--bg-surface);
+            padding: 10px 14px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            max-width: 70%;
+        }
+
+        .chat-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+            font-size: 12px;
+            color: var(--primary-600);
+        }
+
+        .chat-text {
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .chat-time {
+            font-size: 9px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .chat-input input:focus {
+            border-color: var(--primary-500);
+            outline: none;
+        }
+
+        .chat-send {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: var(--primary-500);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-send:hover {
+            background: var(--primary-600);
+            transform: scale(1.05);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .event-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .event-title {
+                font-size: 28px;
+            }
+            
+            .timer-numbers {
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+            
+            .timer-value {
+                font-size: 24px;
+            }
+            
+            .event-meta-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="event-detail-wrapper">
+        <!-- Навигация -->
+        <div class="detail-nav">
+            <a href="events.html" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                <span>Назад к мероприятиям</span>
+            </a>
+            <div class="action-buttons">
+                <div class="action-btn" onclick="shareEvent()" title="Поделиться">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <div class="action-btn" onclick="toggleFavorite()" id="favoriteBtn" title="В избранное">
+                    <i class="far fa-heart"></i>
+                </div>
+                <div class="action-btn" onclick="showQR()" title="QR-код">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <div class="action-btn" onclick="exportToCalendar()" title="Добавить в календарь">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной контейнер для динамического контента -->
+        <div id="eventDetailContainer"></div>
+    </div>
+
+    <!-- Модальное окно для QR -->
+    <div class="modal" id="qrModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>QR-код мероприятия</h2>
+                <span class="modal-close" onclick="closeModal('qrModal')">&times;</span>
+            </div>
+            <div class="qr-container">
+                <div class="qr-box">
+                    <div class="qr-placeholder"></div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 14px;">Отсканируйте, чтобы поделиться</p>
+                <button class="primary-btn" style="padding: 12px;" onclick="downloadQR()">
+                    <i class="fas fa-download"></i> Скачать QR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для чата -->
+    <div class="modal" id="chatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Чат мероприятия</h2>
+                <span class="modal-close" onclick="closeModal('chatModal')">&times;</span>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Напишите сообщение...">
+                <button class="chat-send" onclick="sendChatMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для опросов -->
+    <div class="modal" id="pollModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Опросы мероприятия</h2>
+                <span class="modal-close" onclick="closeModal('pollModal')">&times;</span>
+            </div>
+            <div id="pollContainer"></div>
+            <button class="secondary-btn" onclick="showCreatePollForm()" style="margin-top: 16px;" id="createPollBtn">
+                <i class="fas fa-plus-circle"></i> Создать опрос
+            </button>
+            <div id="createPollForm" style="display: none; margin-top: 20px;">
+                <h3 style="font-size: 16px; margin-bottom: 16px;">Новый опрос</h3>
+                <input type="text" id="pollQuestion" class="poll-input" placeholder="Вопрос">
+                <div class="poll-options-container" id="pollOptionsContainer">
+                    <div class="poll-option-input">
+                        <input type="text" id="pollOption1" placeholder="Вариант 1">
+                    </div>
+                    <div class="poll-option-input">
+                        <input type="text" id="pollOption2" placeholder="Вариант 2">
+                    </div>
+                </div>
+                <button class="secondary-btn" onclick="addPollOption()" style="margin-bottom: 16px;">
+                    <i class="fas fa-plus"></i> Добавить вариант
+                </button>
+                <button class="primary-btn" onclick="createPoll()">
+                    <i class="fas fa-check"></i> Опубликовать опрос
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+        const CURRENT_USER = 'alexandra';
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        let chatMessages = JSON.parse(localStorage.getItem('chatMessages')) || {};
+        let polls = JSON.parse(localStorage.getItem('polls')) || {};
+        let gifts = JSON.parse(localStorage.getItem('gifts')) || {};
+
+        // Получаем id из параметров URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+        const event = events.find(e => e.id === eventId);
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        if (!event) {
+            document.getElementById('eventDetailContainer').innerHTML = `
+                <div style="background: var(--bg-surface); border-radius: var(--radius-2xl); border: 1px solid var(--border-light); padding: 60px; text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--primary-500); margin-bottom: 20px;"></i>
+                    <h2 style="font-size: 24px; margin-bottom: 12px;">Мероприятие не найдено</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 24px;">Возможно, оно было удалено или ссылка неверна</p>
+                    <a href="events.html" class="primary-btn" style="display: inline-flex; width: auto; padding: 12px 24px;">Вернуться на главную</a>
+                </div>
+            `;
+        } else {
+            renderEvent(event);
+            updateFavoriteButton();
+            startCountdown();
+        }
+
+        // ========== ФОРМАТИРОВАНИЕ ДАТЫ ==========
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('ru-RU', { 
+                day: 'numeric', 
+                month: 'long', 
+                hour: '2-digit', 
+                minute: '2-digit'
+            }).replace(',', '');
+        }
+
+        // ========== РЕНДЕРИНГ МЕРОПРИЯТИЯ ==========
+        function renderEvent(event) {
+            const container = document.getElementById('eventDetailContainer');
+            const isCreator = event.creator === CURRENT_USER;
+            const participant = event.participants.find(p => p.username === CURRENT_USER);
+            const isFavorite = favorites.includes(event.id);
+
+            // Статистика участников
+            const confirmedCount = event.participants.filter(p => p.status === 'confirmed').length;
+            
+            // Генерируем участников
+            const participantsHtml = event.participants.map(p => {
+                let statusClass = '';
+                if (p.status === 'confirmed') { statusClass = 'status-confirmed'; }
+                else if (p.status === 'invited') { statusClass = 'status-invited'; }
+                else if (p.status === 'declined') { statusClass = 'status-declined'; }
+
+                return `
+                    <div class="participant-item">
+                        <div class="participant-avatar">${p.username[0].toUpperCase()}</div>
+                        <div class="participant-info">
+                            <div class="participant-name">
+                                @${p.username}
+                                ${p.role === 'organizer' ? '<span class="participant-role">Организатор</span>' : ''}
+                                ${p.role === 'co-organizer' ? '<span class="participant-role">Со-организатор</span>' : ''}
+                            </div>
+                            <div class="participant-status">
+                                <span class="status-badge ${statusClass}"></span>
+                                ${p.status === 'confirmed' ? 'Подтвержден' : 
+                                  p.status === 'invited' ? 'Приглашен' : 'Отказался'}
+                                ${p.joinedAt ? ` · с ${new Date(p.joinedAt).toLocaleDateString()}` : ''}
+                            </div>
+                        </div>
+                        <div class="gift-btn" onclick="sendGift('${p.username}')" title="Отправить подарок">
+                            🎁
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Статистика подарков
+            const eventGifts = gifts[event.id] || {};
+            const totalGifts = Object.values(eventGifts).reduce((sum, val) => sum + val, 0);
+
+            // Плейлист (имитация)
+            const playlist = [
+                { title: 'Walking on Sunshine', artist: 'Katrina & The Waves' },
+                { title: 'Happy', artist: 'Pharrell Williams' },
+                { title: 'Don\'t Stop Me Now', artist: 'Queen' }
+            ];
+
+            // Меню для дня рождения
+            const menu = [
+                { name: 'Торт "Наполеон"', price: '1200 ₽', icon: 'fa-cake-candles' },
+                { name: 'Капкейки', price: '400 ₽', icon: 'fa-cupcake' },
+                { name: 'Шампанское', price: '1500 ₽', icon: 'fa-champagne-glasses' }
+            ];
+
+            // Блок действий
+            let actionsHtml = '';
+            if (isCreator) {
+                actionsHtml = `
+                    <button class="primary-btn" onclick="manageEvent()">
+                        <i class="fas fa-cog"></i> Управление
+                    </button>
+                    <button class="secondary-btn" onclick="showCreatePollForm()">
+                        <i class="fas fa-chart-bar"></i> Создать опрос
+                    </button>
+                    <button class="danger-btn" onclick="cancelEvent()">
+                        <i class="fas fa-times-circle"></i> Отменить
+                    </button>
+                `;
+            } else {
+                if (participant?.status === 'confirmed') {
+                    actionsHtml = `
+                        <button class="danger-btn" onclick="updateStatus('declined')">
+                            <i class="fas fa-times-circle"></i> Отказаться
+                        </button>
+                        <button class="secondary-btn" onclick="openChat()">
+                            <i class="fas fa-comment"></i> Чат
+                        </button>
+                    `;
+                } else if (participant?.status === 'invited') {
+                    actionsHtml = `
+                        <button class="primary-btn" onclick="updateStatus('confirmed')">
+                            <i class="fas fa-check-circle"></i> Принять
+                        </button>
+                                                <button class="danger-btn" onclick="updateStatus('declined')">
+                            <i class="fas fa-times-circle"></i> Отклонить
+                        </button>
+                    `;
+                } else if (participant?.status === 'declined') {
+                    actionsHtml = `
+                        <button class="primary-btn" onclick="updateStatus('confirmed')">
+                            <i class="fas fa-check-circle"></i> Принять участие
+                        </button>
+                    `;
+                } else {
+                    actionsHtml = `
+                        <button class="primary-btn" onclick="joinEvent()">
+                            <i class="fas fa-plus-circle"></i> Принять участие
+                        </button>
+                    `;
+                }
+            }
+
+            container.innerHTML = `
+                <div class="event-content">
+                    <!-- Левая колонка -->
+                    <div class="event-main">
+                        <div class="event-badge">
+                            <i class="fas ${event.format === 'online' ? 'fa-wifi' : 'fa-building'}"></i>
+                            ${event.format === 'online' ? 'Онлайн' : 'Офлайн'} • ${event.type === 'conference' ? 'Конференция' : 
+                              event.type === 'meetup' ? 'Встреча' : 
+                              event.type === 'webinar' ? 'Вебинар' : 
+                              event.type === 'hackathon' ? 'Хакатон' : 
+                              event.type === 'birthday' ? 'День рождения' : 'Мероприятие'}
+                        </div>
+                        
+                        <h1 class="event-title">${event.title}</h1>
+
+                        <!-- Таймер -->
+                        <div class="countdown-timer" id="countdownTimer">
+                            <div class="timer-title">ДО НАЧАЛА</div>
+                            <div class="timer-numbers">
+                                <div class="timer-block">
+                                    <div class="timer-value" id="days">00</div>
+                                    <div class="timer-label">дней</div>
+                                </div>
+                                <div class="timer-block">
+                                    <div class="timer-value" id="hours">00</div>
+                                    <div class="timer-label">часов</div>
+                                </div>
+                                <div class="timer-block">
+                                    <div class="timer-value" id="minutes">00</div>
+                                    <div class="timer-label">минут</div>
+                                </div>
+                                <div class="timer-block">
+                                    <div class="timer-value" id="seconds">00</div>
+                                    <div class="timer-label">секунд</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Мета информация -->
+                        <div class="event-meta-grid">
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <i class="fas fa-calendar"></i>
+                                </div>
+                                <div class="meta-content">
+                                    <div class="meta-label">Дата и время</div>
+                                    <div class="meta-value">${formatDate(event.event_date)}</div>
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="meta-content">
+                                    <div class="meta-label">Место проведения</div>
+                                    <div class="meta-value">${event.location}</div>
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="meta-content">
+                                    <div class="meta-label">Организатор</div>
+                                    <div class="meta-value">@${event.creator}</div>
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="meta-content">
+                                    <div class="meta-label">Участники</div>
+                                    <div class="meta-value">${confirmedCount} <span style="color: var(--text-tertiary); font-weight: normal;">/ ${event.maxParticipants || '∞'}</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Описание -->
+                        <div class="description-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-align-left"></i>
+                                Описание
+                            </h3>
+                            <div class="description-content">
+                                ${event.description || 'Нет описания'}
+                            </div>
+                            
+                            ${event.tags && event.tags.length > 0 ? `
+                                <div class="tags">
+                                    ${event.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Карта для офлайн мероприятий -->
+                        ${event.format === 'offline' ? `
+                            <div class="description-section">
+                                <h3 class="section-title">
+                                    <i class="fas fa-map"></i>
+                                    Карта
+                                </h3>
+                                <div class="map-placeholder">
+                                    <i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i>
+                                    ${event.location}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Меню для дня рождения -->
+                        ${event.type === 'birthday' ? `
+                            <div class="description-section">
+                                <h3 class="section-title">
+                                    <i class="fas fa-utensils"></i>
+                                    Меню
+                                </h3>
+                                ${menu.map(item => `
+                                    <div class="menu-item">
+                                        <i class="fas ${item.icon}"></i>
+                                        <span class="menu-name">${item.name}</span>
+                                        <span class="menu-price">${item.price}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Правая колонка -->
+                    <div class="event-sidebar">
+                        <!-- Панель действий -->
+                        <div class="sidebar-card">
+                            <h3 class="sidebar-title">
+                                <i class="fas fa-bolt"></i>
+                                Действия
+                            </h3>
+                            <div class="action-panel">
+                                ${actionsHtml}
+                                <button class="secondary-btn" onclick="openChat()">
+                                    <i class="fas fa-comments"></i> Чат (${chatMessages[event.id]?.length || 0})
+                                </button>
+                                <button class="secondary-btn" onclick="openPollModal()">
+                                    <i class="fas fa-chart-bar"></i> Опросы (${polls[event.id]?.length || 0})
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Участники -->
+                        <div class="sidebar-card">
+                            <h3 class="sidebar-title">
+                                <i class="fas fa-users"></i>
+                                Участники
+                                <span style="margin-left: auto; font-size: 13px; color: var(--text-tertiary);">${confirmedCount}</span>
+                            </h3>
+                            <div class="participants-list">
+                                ${participantsHtml}
+                            </div>
+                        </div>
+
+                        <!-- Подарки -->
+                        <div class="sidebar-card">
+                            <h3 class="sidebar-title">
+                                <i class="fas fa-gift"></i>
+                                Подарки
+                            </h3>
+                            <div class="gift-section">
+                                <div class="gift-buttons">
+                                    <button class="gift-btn" onclick="sendGift('all')" title="Отправить подарок всем">🎉</button>
+                                    <button class="gift-btn" onclick="sendGift('organizer')" title="Подарок организатору">👑</button>
+                                    <button class="gift-btn" onclick="sendGift('random')" title="Случайный участник">🎲</button>
+                                </div>
+                                <div class="gift-count">
+                                    🎁 Всего подарков: ${totalGifts}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Плейлист -->
+                        <div class="sidebar-card">
+                            <h3 class="sidebar-title">
+                                <i class="fas fa-music"></i>
+                                Плейлист
+                            </h3>
+                            ${playlist.map(song => `
+                                <div class="playlist-item">
+                                    <i class="fas fa-music"></i>
+                                    <div class="playlist-info">
+                                        <div class="playlist-title">${song.title}</div>
+                                        <div class="playlist-artist">${song.artist}</div>
+                                    </div>
+                                    <i class="fas fa-play" style="color: var(--primary-500); font-size: 12px; cursor: pointer;"></i>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ========== ТАЙМЕР ==========
+        let countdownInterval;
+
+        function startCountdown() {
+            if (!event) return;
+            
+            const eventDate = new Date(event.event_date).getTime();
+            
+            function updateTimer() {
+                const now = new Date().getTime();
+                const distance = eventDate - now;
+
+                if (distance < 0) {
+                    document.getElementById('countdownTimer').innerHTML = `
+                        <div class="timer-title">МЕРОПРИЯТИЕ ПРОШЛО</div>
+                        <div style="font-size: 16px; opacity: 0.9;">${formatDate(event.event_date)}</div>
+                    `;
+                    clearInterval(countdownInterval);
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            }
+
+            updateTimer();
+            countdownInterval = setInterval(updateTimer, 1000);
+        }
+
+        // ========== ФУНКЦИИ ДЕЙСТВИЙ ==========
+        function updateStatus(newStatus) {
+            if (!event) return;
+            
+            const participant = event.participants.find(p => p.username === CURRENT_USER);
+            if (participant) {
+                participant.status = newStatus;
+                if (newStatus === 'confirmed') {
+                    participant.joinedAt = new Date().toISOString();
+                }
+            } else {
+                event.participants.push({ 
+                    username: CURRENT_USER, 
+                    status: newStatus, 
+                    role: 'participant',
+                    joinedAt: newStatus === 'confirmed' ? new Date().toISOString() : null
+                });
+            }
+            
+            const index = events.findIndex(e => e.id === event.id);
+            events[index] = event;
+            localStorage.setItem('events', JSON.stringify(events));
+            
+            renderEvent(event);
+            showNotification('Статус обновлен', 'Успешно', 'success');
+        }
+
+        function joinEvent() {
+            updateStatus('confirmed');
+        }
+
+        function toggleFavorite() {
+            const index = favorites.indexOf(event.id);
+            if (index === -1) {
+                favorites.push(event.id);
+                showNotification('Добавлено в избранное', 'Мероприятие сохранено', 'success');
+            } else {
+                favorites.splice(index, 1);
+                showNotification('Удалено из избранного', 'Мероприятие удалено', 'info');
+            }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            updateFavoriteButton();
+        }
+
+        function updateFavoriteButton() {
+            const btn = document.getElementById('favoriteBtn');
+            if (favorites.includes(event.id)) {
+                btn.innerHTML = '<i class="fas fa-heart"></i>';
+                btn.style.color = '#ef4444';
+            } else {
+                btn.innerHTML = '<i class="far fa-heart"></i>';
+                btn.style.color = '';
+            }
+        }
+
+        function shareEvent() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                showNotification('Ссылка скопирована', 'Можно поделиться', 'success');
+            });
+        }
+
+        // ========== QR КОД ==========
+        function showQR() {
+            document.getElementById('qrModal').style.display = 'flex';
+        }
+
+        function downloadQR() {
+            showNotification('QR-код скачан', 'Файл сохранен', 'success');
+            closeModal('qrModal');
+        }
+
+        // ========== ЧАТ ==========
+        function openChat() {
+            const modal = document.getElementById('chatModal');
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            if (!chatMessages[event.id]) {
+                chatMessages[event.id] = [
+                    {
+                        user: 'system',
+                        text: 'Добро пожаловать в чат мероприятия!',
+                        time: new Date().toISOString()
+                    }
+                ];
+            }
+            
+            messagesContainer.innerHTML = chatMessages[event.id].map(msg => `
+                <div class="chat-message">
+                    <div class="chat-avatar">${msg.user === 'system' ? '🤖' : msg.user[0].toUpperCase()}</div>
+                    <div class="chat-bubble">
+                        <div class="chat-name">${msg.user === 'system' ? 'Система' : '@' + msg.user}</div>
+                        <div class="chat-text">${msg.text}</div>
+                        <div class="chat-time">${new Date(msg.time).toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            modal.style.display = 'flex';
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            if (!chatMessages[event.id]) {
+                chatMessages[event.id] = [];
+            }
+            
+            chatMessages[event.id].push({
+                user: CURRENT_USER,
+                text: text,
+                time: new Date().toISOString()
+            });
+            
+            localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+            input.value = '';
+            openChat();
+        }
+
+        // ========== ПОДАРКИ ==========
+        function sendGift(target) {
+            if (!gifts[event.id]) {
+                gifts[event.id] = {};
+            }
+            
+            let targetName = '';
+            if (target === 'all') {
+                event.participants.forEach(p => {
+                    gifts[event.id][p.username] = (gifts[event.id][p.username] || 0) + 1;
+                });
+                targetName = 'всем участникам';
+            } else if (target === 'organizer') {
+                const organizer = event.participants.find(p => p.role === 'organizer');
+                if (organizer) {
+                    gifts[event.id][organizer.username] = (gifts[event.id][organizer.username] || 0) + 1;
+                    targetName = `@${organizer.username}`;
+                }
+            } else if (target === 'random') {
+                const participants = event.participants.filter(p => p.username !== CURRENT_USER);
+                if (participants.length > 0) {
+                    const random = participants[Math.floor(Math.random() * participants.length)];
+                    gifts[event.id][random.username] = (gifts[event.id][random.username] || 0) + 1;
+                    targetName = `@${random.username}`;
+                }
+            } else {
+                gifts[event.id][target] = (gifts[event.id][target] || 0) + 1;
+                targetName = `@${target}`;
+            }
+            
+            localStorage.setItem('gifts', JSON.stringify(gifts));
+            renderEvent(event);
+            showNotification('Подарок отправлен!', targetName ? `Подарок для ${targetName}` : '🎁', 'success');
+        }
+
+        // ========== ОПРОСЫ ==========
+        function openPollModal() {
+            document.getElementById('pollModal').style.display = 'flex';
+            renderPolls();
+        }
+
+        function renderPolls() {
+            const container = document.getElementById('pollContainer');
+            const eventPolls = polls[event.id] || [];
+            
+            if (eventPolls.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">Пока нет опросов</p>';
+                return;
+            }
+            
+            container.innerHTML = eventPolls.map((poll, pollIndex) => `
+                <div class="poll-item">
+                    <div class="poll-question">${poll.question}</div>
+                    ${poll.options.map((opt, optIndex) => `
+                        <div class="poll-option" onclick="votePoll(${pollIndex}, ${optIndex})">
+                            <div class="poll-option-header">
+                                <span class="poll-option-text">${opt.text}</span>
+                                <span class="poll-option-votes">${opt.votes} голосов</span>
+                            </div>
+                            <div class="poll-progress">
+                                <div class="poll-progress-fill" style="width: ${poll.totalVotes > 0 ? (opt.votes / poll.totalVotes) * 100 : 0}%"></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        function showCreatePollForm() {
+            document.getElementById('createPollForm').style.display = 'block';
+            document.getElementById('createPollBtn').style.display = 'none';
+        }
+
+        function addPollOption() {
+            const container = document.getElementById('pollOptionsContainer');
+            const optionCount = container.children.length + 1;
+            const newOption = document.createElement('div');
+            newOption.className = 'poll-option-input';
+            newOption.innerHTML = `
+                <input type="text" id="pollOption${optionCount}" placeholder="Вариант ${optionCount}">
+                <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+            `;
+            container.appendChild(newOption);
+        }
+
+        function createPoll() {
+            const question = document.getElementById('pollQuestion').value.trim();
+            if (!question) {
+                alert('Введите вопрос');
+                return;
+            }
+            
+            const options = [];
+            for (let i = 1; i <= 10; i++) {
+                const input = document.getElementById(`pollOption${i}`);
+                if (input && input.value.trim()) {
+                    options.push({ text: input.value.trim(), votes: 0 });
+                }
+            }
+            
+            if (options.length < 2) {
+                alert('Добавьте минимум 2 варианта ответа');
+                return;
+            }
+            
+            if (!polls[event.id]) {
+                polls[event.id] = [];
+            }
+            
+            polls[event.id].push({
+                question,
+                options,
+                totalVotes: 0,
+                createdBy: CURRENT_USER,
+                createdAt: new Date().toISOString()
+            });
+            
+            localStorage.setItem('polls', JSON.stringify(polls));
+            
+            // Сброс формы
+            document.getElementById('createPollForm').style.display = 'none';
+            document.getElementById('createPollBtn').style.display = 'block';
+            document.getElementById('pollQuestion').value = '';
+            document.querySelectorAll('.poll-option-input').forEach((el, i) => {
+                if (i > 1) el.remove();
+            });
+            document.getElementById('pollOption1').value = '';
+            document.getElementById('pollOption2').value = '';
+            
+            renderPolls();
+            showNotification('Опрос создан', 'Участники могут голосовать', 'success');
+        }
+
+        function votePoll(pollIndex, optionIndex) {
+            const eventPolls = polls[event.id];
+            if (!eventPolls) return;
+            
+            const poll = eventPolls[pollIndex];
+            if (poll.votedBy && poll.votedBy.includes(CURRENT_USER)) {
+                showNotification('Вы уже голосовали', 'Можно голосовать только один раз', 'warning');
+                return;
+            }
+            
+            poll.options[optionIndex].votes++;
+            poll.totalVotes++;
+            
+            if (!poll.votedBy) poll.votedBy = [];
+            poll.votedBy.push(CURRENT_USER);
+            
+            localStorage.setItem('polls', JSON.stringify(polls));
+            renderPolls();
+            showNotification('Голос учтен', 'Спасибо за участие!', 'success');
+        }
+
+        // ========== ДОБАВЛЕНИЕ В КАЛЕНДАРЬ ==========
+        function exportToCalendar() {
+            const eventData = event;
+            
+            // Создаем .ics файл
+            const startDate = new Date(eventData.event_date);
+            const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // +2 часа
+            
+            const formatDate = (date) => {
+                return date.toISOString().replace(/-/g, '').replace(/:/g, '').split('.')[0] + 'Z';
+            };
+            
+            const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//EventHub 3000//EN
+BEGIN:VEVENT
+UID:${eventData.id}@eventhub3000.com
+DTSTAMP:${formatDate(new Date())}
+DTSTART:${formatDate(startDate)}
+DTEND:${formatDate(endDate)}
+SUMMARY:${eventData.title}
+DESCRIPTION:${eventData.description || ''}
+LOCATION:${eventData.location}
+END:VEVENT
+END:VCALENDAR`;
+            
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${eventData.title}.ics`;
+            link.click();
+            
+            showNotification('Добавлено в календарь', 'Файл .ics скачан', 'success');
+        }
+
+        // ========== УПРАВЛЕНИЕ МЕРОПРИЯТИЕМ ==========
+        function manageEvent() {
+            window.location.href = `create_event.html?edit=${event.id}`;
+        }
+
+        function cancelEvent() {
+            if (confirm('Вы уверены, что хотите отменить мероприятие?')) {
+                const index = events.findIndex(e => e.id === event.id);
+                events.splice(index, 1);
+                localStorage.setItem('events', JSON.stringify(events));
+                
+                showNotification('Мероприятие отменено', 'Все участники уведомлены', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'events.html';
+                }, 1500);
+            }
+        }
+
+        // ========== УВЕДОМЛЕНИЯ ==========
+        function showNotification(title, message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--bg-surface);
+                border-radius: var(--radius-lg);
+                border-left: 4px solid ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                box-shadow: 0 10px 20px var(--shadow-color);
+                padding: 12px 16px;
+                min-width: 280px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                z-index: 10001;
+                animation: slideIn 0.3s;
+                border: 1px solid var(--border-light);
+            `;
+            
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+            if (type === 'error') icon = 'times-circle';
+            
+            notification.innerHTML = `
+                <i class="fas fa-${icon}" style="font-size: 20px; color: ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : type === 'error' ? '#ef4444' : '#3b82f6'};"></i>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; margin-bottom: 2px; font-size: 14px;">${title}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">${message}</div>
+                </div>
+                <div style="cursor: pointer; color: var(--text-tertiary);" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        // ========== МОДАЛЬНЫЕ ОКНА ==========
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Добавляем стили для уведомлений
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateX(100%); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
